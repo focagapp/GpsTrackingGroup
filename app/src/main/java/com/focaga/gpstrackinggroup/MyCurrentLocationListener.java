@@ -24,6 +24,7 @@ import cz.msebera.android.httpclient.util.EntityUtils;
 
 import static com.focaga.gpstrackinggroup.MapsActivity.group;
 import static com.focaga.gpstrackinggroup.MapsActivity.mMap;
+import static com.focaga.gpstrackinggroup.MapsActivity.marker;
 import static com.focaga.gpstrackinggroup.MapsActivity.user;
 
 /**
@@ -34,6 +35,7 @@ public class MyCurrentLocationListener implements LocationListener {
     long runTime;
     long start=-1;
     String result;
+
     AsyncHttpClient client = new AsyncHttpClient(); //http://loopj.com/android-async-http/
     @Override
     public void onLocationChanged(Location location) {
@@ -55,7 +57,7 @@ public class MyCurrentLocationListener implements LocationListener {
 
             try {
                 final String paginaURL = "http://gpstrackinggroup.altervista.org/insert.php?lat=" + location.getLatitude() +
-                        "&lon=" + location.getLongitude() + "&usr=" + user + "&gro=" + group;
+                        "&lon=" + location.getLongitude() + "&usr=" + MapsActivity.user + "&gro=" + group;
                 client.get(paginaURL, new TextHttpResponseHandler() {
 
                     @Override
@@ -71,7 +73,6 @@ public class MyCurrentLocationListener implements LocationListener {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, String responseString) {
                         // called when response HTTP status is "200 OK"
-                        System.out.println("=====RESULT======"+responseString);
                         aggiornaPosizioni(responseString);
 
 
@@ -112,15 +113,18 @@ public class MyCurrentLocationListener implements LocationListener {
 
     public void aggiornaPosizioni(String posizioni) {
         String[] data = new String[4];
+        int j=0;
         StringTokenizer stringTokenizer = new StringTokenizer(posizioni,"&");
-        while (stringTokenizer.hasMoreTokens()) {
+        //System.out.println("==============posizioni== "+posizioni);
+        while (stringTokenizer.hasMoreTokens() && !posizioni.equals("nothing")) {
             for (int i = 0; i < 4 && stringTokenizer.hasMoreTokens(); i++) {
                 data[i] = stringTokenizer.nextToken();
-                System.out.println(stringTokenizer.countTokens());
 
             }
             LatLng pos = new LatLng(Double.parseDouble(data[0]), Double.parseDouble(data[1]));
-            mMap.addMarker(new MarkerOptions().position(pos).title(data[2] + " - " + data[3]));
+            marker[j].remove();
+            marker[j] = mMap.addMarker(new MarkerOptions().position(pos).title(data[2] + " - " + data[3]));
+            j++;
         }
     }
 }
